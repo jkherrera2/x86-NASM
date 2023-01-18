@@ -1,0 +1,503 @@
+[INSTRUCTION]
+Create a program that simulates a simple calculator.
+
+(a) The calculator should be able to add, subtract, multiply and divide two unsigned or
+signed integers.
+(b) The calculator should display the correct result.
+(c) The input and result can have 2 or more digits.
+(d) Hard code the two input integers with a size of 32 bits.
+
+
+[SOLUTION]
+section .data
+    num1 dd 1
+    num2 dd -3
+    
+    multiplier dd 100000
+    nega dd -1
+    newline db 0xa
+    
+    dpoint db '.' 
+    dpointlen equ $ - dpoint
+    
+    negsign db '-'
+    neglen equ $ - negsign
+    
+    title db 'NASM BASIC CALCULATOR',0xa,0xa
+    titlelen equ $ - title
+    
+    sum db 'SUM: '
+    sumlen equ $ - sum
+    
+    diff db 'DIFFERENCE: '
+    difflen equ $ - diff
+    
+    prod db 'PRODUCT: '
+    prodlen equ $ - prod
+    
+    quo db 'QUOTIENT: '
+    quolen equ $ - quo
+    
+    arr TIMES 100 db 0
+    
+section .bss
+    output resb 1
+    remainder resb 1
+    
+section .text
+
+    global _start
+
+_start:
+
+;TITLE
+    mov ecx, title
+    mov edx, titlelen
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+;SUM TEXT
+    mov ecx, sum
+    mov edx, sumlen
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    ;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+
+    mov  ebp, arr            
+
+    mov eax, [num1]          
+    mov ebx, [num2]          
+    add ebx, eax
+    mov edi, ebx
+    
+    cmp edi, 0              ;check if the sum is a negative number
+    jl _negative            ;jump is it is a negative number
+    jmp conversion          ;otherwise, proceed on displaying the sum
+    
+_negative:
+    mov eax, edi            
+    imul dword [nega]       ;multiply to -1 to simplify the printing
+    
+    mov edi, eax            ;store the product to a register to be used at "conversion" loop
+    
+    mov edx, neglen         ;print negative sign
+    mov ecx, negsign
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    ;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+
+conversion:
+    mov eax, edi            ;store the input to a 32-bit register dividend
+    mov ecx, 10             ;store the "base number" to a 32-bit register as the divisor
+    div ecx                 ;divide the input and store the remainder at edx
+    
+    mov [ebp], edx          ;store the remainder as the first element of an array (repeat)
+    add ebp, 1              ;increment the pointer of the array
+    inc esi                 ;increment the counter on how many elements were stored
+    mov edi, eax            ;store the new quotient to the temporary register
+    
+    mov edx, 0              ;clear the remainder register
+    cmp edi, 0              ;compare if the quotient is already zero
+    jnz conversion          ;loop again if not yet zero   
+
+reverse:
+    sub ebp, 1              ;point to the last stored element of the array
+    mov esp, [ebp]          ;store the current element to a register
+    
+    add esp, 48             ;convert to digit
+    mov [output], esp       ;store the digit to the output variable
+    
+    mov edx, 1              ;print
+    mov ecx, output
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    dec esi                 ;decrement counter to know if it reached the very first element
+    cmp esi, 0              ;compare if the counter is zero
+    jnz reverse             ;if counter not 0, then loop again
+
+;NEW LINE
+    mov ecx, newline
+    mov edx, 1
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+
+;SUBTRACTION -------------------------------------
+
+;DIFFERENCE TEXT
+    mov ecx, diff
+    mov edx, difflen
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    ;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+    
+    mov eax, [num1]          
+    mov ebx, [num2]          
+    sub eax, ebx            ;subtract the two numbers
+    mov edi, eax
+    
+    cmp edi, 0              ;check if the difference is negative
+    jl _negative1           ;jump is it is negative
+    jmp conversion1         ;otherwise, proceed to displaying the difference
+    
+_negative1:
+    mov eax, edi
+    imul dword [nega]       ;multiply to -1 to simplify the printing
+    
+    mov edi, eax            ;store the product to a register to be used at "conversion" loop
+    
+    mov edx, neglen         ;print negative sign
+    mov ecx, negsign
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    ;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+
+conversion1:
+    mov eax, edi            ;store the input to a 32-bit register dividend
+    mov ecx, 10             ;store the "base number" to a 32-bit register as the divisor
+    div ecx                 ;divide the input and store the remainder at edx
+    
+    mov [ebp], edx          ;store the remainder as the first element of an array (repeat)
+    add ebp, 1              ;increment the pointer of the array
+    inc esi                 ;increment the counter on how many elements were stored
+    mov edi, eax            ;store the new quotient to the temporary register
+    
+    mov edx, 0              ;clear the remainder register
+    cmp edi, 0              ;compare if the quotient is already zero
+    jnz conversion1          ;loop again if not yet zero   
+
+reverse1:
+    sub ebp, 1              ;point to the last stored element of the array
+    mov esp, [ebp]          ;store the current element to a register
+    
+    add esp, 48             ;convert to digit
+    mov [output], esp       ;store the digit to the output variable
+    
+    mov edx, 1              ;print
+    mov ecx, output
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    dec esi                 ;decrement counter to know if it reached the very first element
+    cmp esi, 0              ;compare if the counter is zero
+    jnz reverse1            ;if counter not 0, then loop again
+    
+;NEW LINE
+    mov ecx, newline
+    mov edx, 1
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+
+;MULTIPLICATION -------------------------------------
+
+;PRODUCT TEXT
+    mov ecx, prod
+    mov edx, prodlen
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    ;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+    
+    mov eax, [num1]          
+    mov ebx, [num2]          
+    
+    cmp eax, 0              ;check the first number if it is signed/negative
+    jl _imul                ;jump if yes
+    
+    cmp ebx, 0              ;otherwise, check the second number, if it is signed/negative
+    jl _imul                ;jump if yes
+    
+    jmp _mul                ;otherwise, they're both positive, proceed to unsigned multiplication
+    
+_mul:                       ;this multiplies if the numbers are both positive                
+    mov eax, [num1]
+    mul dword [num2]
+    mov edi, eax
+
+    jmp conversion2
+    
+_imul:                      ;this is when the any of the two numbers or both are negative
+    mov eax, [num1]
+    imul dword [num2]
+    mov edi, eax
+    
+    cmp edi, 0              ;check if the product is negative
+    jl _negative2           ;jump if yes
+    jmp conversion2         ;otherwise, proceed to displaying the product
+    
+_negative2:
+    mov eax, edi
+    imul dword [nega]       ;multiply to -1 to simplify the printing
+    
+    mov edi, eax            ;store the product to a register to be used at "conversion" loop
+    
+    mov edx, neglen         ;print negative sign
+    mov ecx, negsign
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    ;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+
+conversion2:
+    mov eax, edi            ;store the input to a 32-bit register dividend
+    mov ecx, 10             ;store the "base number" to a 32-bit register as the divisor
+    div ecx                 ;divide the input and store the remainder at edx
+    
+    mov [ebp], edx          ;store the remainder as the first element of an array (repeat)
+    add ebp, 1              ;increment the pointer of the array
+    inc esi                 ;increment the counter on how many elements were stored
+    mov edi, eax            ;store the new quotient to the temporary register
+    
+    mov edx, 0              ;clear the remainder register
+    cmp edi, 0              ;compare if the quotient is already zero
+    jnz conversion2          ;loop again if not yet zero   
+
+reverse2:
+    sub ebp, 1              ;point to the last stored element of the array
+    mov esp, [ebp]          ;store the current element to a register
+    
+    add esp, 48             ;convert to digit
+    mov [output], esp       ;store the digit to the output variable
+    
+    mov edx, 1              ;print
+    mov ecx, output
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    dec esi                 ;decrement counter to know if it reached the very first element
+    cmp esi, 0              ;compare if the counter is zero
+    jnz reverse2            ;if counter not 0, then loop again
+ 
+ ;NEW LINE
+    mov ecx, newline
+    mov edx, 1
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+;DIVISION --------------------------------------------------------
+
+;QUOTIENT TEXT
+    mov ecx, quo
+    mov edx, quolen
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    ;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+    
+    mov eax, [num1]          
+    mov ebx, [num2]          
+    
+    cmp eax, 0              ;check if the first number is negative
+    jl _negnum1             ;jump if yes
+    
+    jmp _negnum2            ;otherwise, jump to "_negnum2"
+    
+    
+_negnum1:       ;this is when the first number is negative
+
+    cmp ebx, 0              ;check the second number if it is also negative 
+    jl _negboth             ;jump if yes. this means they're "BOTH NEGATIVE"
+    
+    mov eax, [num1]         ;otherwise, the first number is the only negative number
+    imul dword [nega]       ;multiply it to -1 to simplify the printing
+    
+    div dword [num2]        ;divide the two numbers
+    mov edi, eax        
+    jmp _negative3          ;jump to "_negative3" because the quotient is obviously negative
+    
+    
+_negnum2:       ;this is when the first number is positive
+
+    mov ebx, [num2]         
+    cmp ebx, 0              ;check if the second number is negative
+    jl _negnotboth          ;jump if yes. thie means "ONLY THE SECOND NUMBER IS NEGATIVE"
+    
+    mov eax, [num1]         ;otherwise, they're "BOTH POSITIVE"
+    div dword [num2]        ;divide the two unsigned numbers
+    
+    mov edi, eax            
+    jmp _clear              ;clear the registers
+
+
+_negnotboth:    ;this is when only the second number is negative
+    mov esi, eax
+    
+    mov eax, [num2]
+    imul dword [nega]       ;multiply the second number to -1 to simplify the printing
+    
+    mov [num2], eax         ;return the value to [num2]
+    
+    mov eax, esi            
+    div dword [num2]        ;divide the two unsigned numbers
+    
+    mov edi, eax
+    jmp _negative3          ;jump to "_negative3" because the quotient is obviously negative
+
+
+_negboth:       ;this is when both two numbers are negative
+    mov eax, [num1]                     
+    cdq                     ;extend the registers
+    mov ebx, [num2]
+    idiv ebx                ;do signed division and store the remainder at edx
+    
+    mov edi, eax
+    jmp _clear              ;clear the registers
+    
+    
+_negative3:
+    mov edx, neglen         ;print negative sign
+    mov ecx, negsign
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+
+
+_clear:
+    ;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+    mov esi, 0
+
+conversion3:
+    mov eax, edi            ;store the input to a 32-bit register dividend
+    mov ecx, 10             ;store the "base number" to a 32-bit register as the divisor
+    div ecx                 ;divide the input and store the remainder at edx
+    
+    mov [ebp], edx          ;store the remainder as the first element of an array (repeat)
+    add ebp, 1              ;increment the pointer of the array
+    inc esi                 ;increment the counter on how many elements were stored
+    mov edi, eax            ;store the new quotient to the temporary register
+    
+    mov edx, 0              ;clear the remainder register
+    cmp edi, 0              ;compare if the quotient is already zero
+    jnz conversion3          ;loop again if not yet zero   
+
+reverse3:
+    sub ebp, 1              ;point to the last stored element of the array
+    mov esp, [ebp]          ;store the current element to a register
+    
+    add esp, 48             ;convert to digit
+    mov [output], esp       ;store the digit to the output variable
+    
+    mov edx, 1              ;print
+    mov ecx, output
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    dec esi                 ;decrement counter to know if it reached the very first element
+    cmp esi, 0              ;compare if the counter is zero
+    jnz reverse3             ;if counter not 0, then loop again
+    
+
+;Print the remainder
+    mov edx, dpointlen
+    mov ecx, dpoint
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+    mov esi, 0
+    
+    mov eax, [num1]             
+    cdq                     ;extend the registers
+    mov ebx, [num2]
+    idiv ebx                ;repeat the signed division but only for the remainder
+
+    mov eax, edx            
+    mul dword [multiplier]  ;multiply the remainder by 100,000, store the product to eax
+    
+    cdq                     ;extend the registers again
+    mov ebx, [num2]
+    idiv ebx                ;divide the product by the second number to get the actual remainder
+    
+    mov edi, eax            ;store the quotient to edi and be printed as the remainder
+    mov edx, 0
+
+_remainder:
+    mov eax, edi            ;store the input to a 32-bit register dividend
+    mov ecx, 10             ;store the "base number" to a 32-bit register as the divisor
+    div ecx                 ;divide the input and store the remainder at edx
+    
+    mov [ebp], edx          ;store the remainder as the first element of an array (repeat)
+    add ebp, 1              ;increment the pointer of the array
+    inc esi                 ;increment the counter on how many elements were stored
+    mov edi, eax            ;store the new quotient to the temporary register
+    
+    mov edx, 0              ;clear the remainder register
+    cmp edi, 0              ;compare if the quotient is already zero
+    jnz _remainder          ;loop again if not yet zero   
+
+_remReverse:
+    sub ebp, 1              ;point to the last stored element of the array
+    mov esp, [ebp]          ;store the current element to a register
+    
+    add esp, 48             ;convert to digit
+    mov [output], esp       ;store the digit to the output variable
+    
+    mov edx, 1              ;print
+    mov ecx, output
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    dec esi                 ;decrement counter to know if it reached the very first element
+    cmp esi, 0              ;compare if the counter is zero
+    jnz _remReverse         ;if counter not 0, then loop again
+
+exit:
+    mov eax, 1
+    int 0x80

@@ -1,0 +1,142 @@
+[INSTRUCTION]
+Create a program that multiplies two unsigned integers using only shift and add operations.
+
+(a) The input and result can have 2 or more digits.
+(b) Display the results of the multiplication.
+(c) Hard code the two input integers with a size of 32 bits.
+
+
+[SOLUTION]
+section .data
+    num1 dd 3147483647
+    num2 dd 1
+    sum dd 0
+    counter dd -1
+    
+    title db 'MULTIPLICATION USING SHIFT AND ADD OPERATION',0xa,0xa
+    titlelen equ $ - title
+    
+    text db 'The product is: '
+    textlen equ $ - text
+    
+    arr TIMES 100 db 0
+    
+section .bss
+    output resb 1
+    
+section .text
+    global _start                 
+    
+_start: 
+
+;TITLE
+    mov ecx, title
+    mov edx, titlelen
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    mov ecx, text
+    mov edx, textlen
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    ;clear the registers
+    mov edx, 0         
+    mov ecx, 0
+    mov ebx, 0
+    mov eax, 0
+    
+    mov esi, [counter]     
+    mov ebx, [num1]
+    mov edi, [num2]  
+    
+traverse:
+    mov ebx, [num1]          
+    mov eax, edi            ;store the input to a 32-bit register dividend
+    mov ecx, 2              ;store the "base number" to a 32-bit register as the divisor
+    div ecx                 ;divide the input and store the remainder at edx
+    
+    add esi, 1              ;this denotes as the power of 2 which starts from 0
+    mov esp, esi            ;store the power to temporary counter
+    
+    mov edi, eax            ;return the quotient to edi
+    
+    cmp edx, 1              ;check if the remainder is 1 (for binary)
+    je shift                ;jump if yes, to start the shifting
+    jmp looper              ;otherwise, loop again
+    
+    shift:                  
+        cmp esp, 0          ;check if the first "1" is 2 raised to 0
+        jz _accumulate      ;jump if yes, this implies multiplying 1 to num1
+        
+        mov ebp, esp        ;otherwise, store the power of two to a temporary register
+        
+        shl ebx, 1          ;shift left depending on the power of two
+        
+        dec esp             ;decrement the power of two
+        cmp esp, 0          ;compare if the counter is zero
+        jnz shift           ;if no, loop/shift again 
+        
+    _accumulate:
+        add [sum], ebx      ;after each shift, accumulate the values
+                            ;then, the final accumulated sum is the product
+        
+    looper:
+        ;clear the registers
+        mov eax, 0
+        mov ebx, 0
+        mov ecx, 0
+        mov edx, 0              
+        
+        cmp edi, 0          ;compare if the quotient is already zero
+        jnz traverse        ;loop again if not yet zero
+    
+;clear register
+    mov eax, 0
+    mov ebx, 0
+    mov ecx, 0
+    mov edx, 0
+    mov edi, 0
+    mov ebp, 0
+    mov esp, 0
+    mov esi, 0
+    
+    mov ebp, arr            ;point to the current address of array
+    mov edi, [sum]          ;store the accumulated sum/product to a register
+        
+storing:
+    mov eax, edi            ;store the input to a 32-bit register dividend
+    mov ecx, 10             ;store the "base number" to a 32-bit register as the divisor
+    div ecx                 ;divide the input and store the remainder at edx
+    
+    mov [ebp], edx          ;store the remainder as the first element of an array (repeat)
+    add ebp, 1              ;increment the pointer of the array
+    inc esi                 ;increment the counter on how many elements were stored
+    mov edi, eax            ;store the new quotient to the temporary register
+    
+    mov edx, 0              ;clear the remainder register
+    cmp edi, 0              ;compare if the quotient is already zero
+    jnz storing             ;loop again if not yet zero
+    
+printing:
+    sub ebp, 1              ;point to the last stored element of the array
+    mov esp, [ebp]          ;store the current element to a register
+    
+    add esp, 48             ;convert to digit
+    mov [output], esp       ;store the digit to the output variable
+    
+    mov edx, 1              ;print
+    mov ecx, output
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    dec esi                 ;decrement counter to know if it reached the very first element
+    cmp esi, 0              ;compare if the counter is zero
+    jnz printing            ;if counter not 0, then loop 
+
+exit:
+    mov eax, 1     
+    int 0x80
