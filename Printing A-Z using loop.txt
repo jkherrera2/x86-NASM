@@ -1,0 +1,47 @@
+[INSTRUCTION]
+Create a program that will display all the uppercase letters from 'A' to 'Z' using the loop instruction and ASCII codes. The letters must be displayed in alphabetical order.
+
+
+[SOLUTION]
+section .data
+    integer dd 0
+
+
+
+section .bss
+    result resb 1
+
+
+section .text
+    global _start
+
+
+
+_start:
+
+    while:
+        mov eax, 26
+        mov ecx, [integer]
+        
+        cmp eax, ecx
+        je exit
+
+        add ecx, 65
+        mov [result], ecx
+
+
+        mov edx, 1
+        mov ecx, result
+        mov ebx, 1
+        mov eax, 4
+        int 0x80
+
+        mov ecx, [integer]
+        inc ecx
+        mov [integer], ecx
+        jmp while
+
+    exit:
+        mov eax,1
+        int 0x80
+

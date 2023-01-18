@@ -1,0 +1,122 @@
+[INSTRUCTION]
+Create a program that will output the UP grade based on the following scale:
+
+	Score	        Grade
+	90 and above     1.0
+	80 - 89	         2.0
+	60 - 79		 3.0
+	55 - 59		 4.0
+	54 and below	 5.0
+
+
+[SOLUTION]
+section .data 
+    str1 db 'GRADE: 1.0',0xa
+    len1 equ $ - str1
+    
+    str2 db 'GRADE: 2.0',0xa
+    len2 equ $ - str2
+
+    str3 db 'GRADE: 3.0',0xa
+    len3 equ $ - str3
+    
+    str4 db 'GRADE: 4.0',0xa
+    len4 equ $ - str4
+
+    str5 db 'GRADE: 5.0',0xa
+    len5 equ $ - str5
+    
+section .text
+    global _start
+    
+_start:
+
+    ;Note that the default output is 'GRADE: 5.0'
+    ;because there is no input yet (i.e. value for ah). 
+ 
+    mov ah, 86 ;Uncomment this for an initial score to be graded.
+    
+    mov al, 90
+    cmp al, ah
+    
+    jnle else_dos
+
+            ;Print the Grade
+            mov edx, len1
+            mov ecx, str1
+            mov ebx,1
+            mov eax,4
+            int 0x80
+            
+            jmp endif
+          
+    else_dos:
+
+        mov bl, 80
+        cmp bl, ah
+
+        jnle else_tres
+
+            ;Print the Grade
+            mov edx, len2
+            mov ecx, str2
+            mov ebx, 1
+            mov eax, 4
+            int 0x80
+           
+            jmp endif
+
+    
+
+    else_tres:
+  
+        mov cl, 60
+        cmp cl, ah
+        
+        jnle else_kwatro
+
+            ;Print the Grade
+            mov edx, len3
+            mov ecx, str3
+            mov ebx, 1
+            mov eax, 4
+            int 0x80
+            
+            jmp endif
+
+            
+
+    else_kwatro:
+
+        mov dl, 55
+        cmp dl, ah
+       
+        jnle else_singko
+
+            ;Print the Grade
+            mov edx, len4
+            mov ecx, str4
+            mov ebx, 1
+            mov eax, 4
+            int 0x80
+          
+            jmp endif
+    
+    else_singko:
+
+            ;Print the Grade
+            mov edx, len5
+            mov ecx, str5
+            mov ebx, 1
+            mov eax, 4
+            int 0x80
+         
+            jmp endif
+
+    
+
+    endif:
+
+    exit:
+    mov eax, 1
+    int 0x80
