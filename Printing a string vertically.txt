@@ -1,0 +1,54 @@
+[INSTRUCTION]
+Create an assembly program that will display each character in a string in a separate lines.
+NOTE: the string will not contain any spaces. 
+EXAMPLE:
+	C
+	A
+	T
+
+[SOLUTION]
+section .data
+    x db "helloworld",0
+    output dw 0
+    counter dd 10
+
+section .bss
+    result resb 1
+
+section .text 
+    global _start
+    
+_start: 
+
+    mov  esi, [counter]  ;counter
+    mov  edi, x          ;point to the current address of array
+    mov  eax, 0          ;temporary storage of element
+
+top:  
+    mov eax, [edi]       ;store current element
+    add  edi, 1          ;move pointer to next element
+    mov [output], eax
+    
+    ;print character
+    mov  edx,1           
+    mov  ecx, output    
+    mov  ebx, 1          
+    mov  eax, 4          
+    int  0x80
+    
+    ;print next line
+    mov eax, 0xa    
+    mov [result], eax
+    mov edx, 1
+    mov ecx, result
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+
+    dec  esi             ;decrement counter
+    cmp esi, 0           ;compare if it reaches 0
+    jnz  top             ;if counter not 0, then loop again
+
+exit:
+      mov  eax, 1     
+      int  0x80  

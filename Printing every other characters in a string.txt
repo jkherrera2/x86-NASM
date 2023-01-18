@@ -1,0 +1,46 @@
+[INSTRUCTION]
+Create an assembly program that will display every other character in a string starting with
+the first character. NOTE: the string will not contain any spaces. Output the characters on
+a single line with no spaces in between.
+
+Example: 
+	input: helloworld
+	output: hlool
+
+[SOLUTION]
+section .data
+    x db "helloworld",0
+    output dw 0
+    counter dd 10/2
+
+section .bss
+    result resb 1
+
+section .text 
+    global _start
+    
+_start: 
+
+    mov  esi, [counter]  ;counter
+    mov  edi, x          ;point to the current address of array
+    mov  eax, 0          ;temporary storage of element
+
+top:  
+    mov eax, [edi]       ;store current element
+    add  edi, 2          ;move pointer to next element
+    mov [output], eax
+    
+    ;print character
+    mov  edx,1           
+    mov  ecx, output    
+    mov  ebx, 1          
+    mov  eax, 4          
+    int  0x80
+
+    dec  esi             ;decrement counter
+    cmp esi, 0           ;compare if it reaches 0
+    jnz  top             ;if counter not 0, then loop again
+
+exit:
+      mov  eax, 1     
+      int  0x80

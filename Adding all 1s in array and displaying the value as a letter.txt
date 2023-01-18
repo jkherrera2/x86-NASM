@@ -1,0 +1,54 @@
+[INSTRUCTION]
+Create an assembly program that will add only the integer value 1 found in an array. Display
+the sum of the 1’s as a letter (either lowercase or uppercase).
+
+Example: 
+	array: 2,1,2,11,2,1,24,1
+	output: C
+
+
+[SOLUTION]
+section .data
+    x db 2,1,2,11,2,1,24,1
+    output dw 0
+    counter dd 12       ;length of array
+    
+section .bss
+    result resb 1
+
+section .text 
+    global _start
+    
+_start: 
+    mov  esi, [counter]  ;counter
+    mov  edi, x          ;point to the current address of array
+    mov  bh, 0           ;temporary storage of element
+
+top:  
+    mov ah, [edi]        ;store current element
+    cmp ah, 1            ;is it equal to 1?
+    jne looper           ;jump to looper if not equal to 1
+    
+    add bh, ah           ;store the sum
+    jmp looper           ;continue the loop
+    
+    looper:
+        inc  edi         ;move pointer to next element
+        dec  esi         ;decrement counter
+        cmp esi, 0       ;compare if it reaches 0
+        jnz  top         ;if counter not 0, then loop again
+        jmp print        ;if counter is 0, jump to print
+
+print:
+    add bh, 64
+    mov [output], bh
+    ;print character
+    mov  edx, 1           
+    mov  ecx, output    
+    mov  ebx, 1          
+    mov  eax, 4          
+    int  0x80
+    
+exit:
+      mov  eax, 1     
+      int  0x80

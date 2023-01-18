@@ -1,0 +1,83 @@
+[INSTRUCTION]
+Create an assembly program that will scan the integer values of an array and display the
+following output:
+
+if integer > 10 then output the word “decimal”
+if integer < 10 and > 0 then output the word “digit”
+if integer == 0 then output the word “null”
+
+Example:
+	array: 2,1,3,11,0,1,24,1
+	output: digit,digit,digit,decimal,null,digit,decimal,digit
+
+
+[SOLUTION]
+section .data
+    x db 2,1,3,11,0,1,24,10
+    counter dd 8
+    
+    str1 db 'null',0xa
+    len1 equ $ - str1
+    
+    str2 db 'digit',0xa
+    len2 equ $ - str2
+
+    str3 db 'decimal',0xa
+    len3 equ $ - str3
+    
+section .bss
+    result resb 1
+
+section .text 
+    global _start
+    
+_start: 
+
+    mov  esi, [counter]  ;counter
+    mov  edi, x          ;point to the current address of array
+    mov  eax, 0          ;temporary storage of element
+
+top:  
+    mov ah, [edi]        ;store current element
+    inc  edi             ;move pointer to next element
+    
+    cmp ah, 0            ;is it equal to zero?
+    jnz not_zero         ;jump to not_zero if it's not zero
+    
+    ;otherwise print null
+    mov edx, len1       
+    mov ecx, str1
+    mov ebx,1
+    mov eax,4
+    int 0x80
+    jmp looper    
+    
+    not_zero:            ;So, it it's not equal to zero
+        cmp ah, 10       ;But is it greater than ten?
+        jge over10       ;jump to over10 if it's greater than ten
+
+        ;otherwise, print digit
+        mov edx, len2
+        mov ecx, str2
+        mov ebx,1
+        mov eax,4
+        int 0x80
+        jmp looper
+    
+    over10:
+        ;print decimal
+        mov edx, len3
+        mov ecx, str3
+        mov ebx,1
+        mov eax,4
+        int 0x80
+        jmp looper
+    
+    looper:
+        dec  esi             ;decrement counter
+        cmp  esi, 0          ;compare if it reaches 0
+        jnz  top             ;if counter not 0, then loop again
+
+exit:
+      mov  eax, 1     
+      int  0x80

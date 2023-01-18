@@ -1,0 +1,81 @@
+[INSTRUCTION]
+Create an assembly program that makes use of loops and repeated subtraction to display a 2
+digit integer. Assume that the range of 2 digit integers to be displayed is 10 to 50 (inclusive).
+
+
+[SOLUTION]
+section .data
+    input dd 10
+    
+    str1 db 'The number is a single digit.',0xa
+    len1 equ $ - str1
+    
+    str2 db 'The number is a three-digit.',0xa
+    len2 equ $ - str2
+    
+    first_digit dd 0
+    second_digit dd 0
+ 
+section .text
+    global _start
+
+_start:
+    mov edx, [input]    ; Store the two-digit number to be subtracted repeatedly
+    mov ebx, 0          ; Counter for the second digit as long as it can be subtracted by ten
+    
+    cmp edx, 10         ; Error-handling for numbers less than 10
+    jl single_digit
+    
+    cmp edx, 99         ; Error-handling for numbers greater than 10
+    jg three_digits
+    
+looper: 
+    cmp edx, 10         ; Is it subtractable to 10?
+    jl print            ; Jump to print if it is not
+    
+    sub edx, 10         ; Subtract 10 until it's less than 10 (i.e. 1-9)
+    inc ebx             ; Add 1 to counter to get the exact first digit every time it is subtracted by 10
+    jmp looper          
+    
+    
+single_digit:
+    mov edx, len1
+    mov ecx, str1
+    mov ebx,1
+    mov eax,4
+    int 0x80
+    jmp exit
+    
+three_digits:
+    mov edx, len2
+    mov ecx, str2
+    mov ebx,1
+    mov eax,4
+    int 0x80
+    jmp exit
+    
+
+print:
+    add ebx, 48                 
+    mov [first_digit], ebx       
+    
+    add edx, 48                 
+    mov [second_digit], edx      
+    
+    ;print first digit
+    mov edx, 1
+    mov ecx, first_digit
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+    ;print second digit
+    mov edx, 1
+    mov ecx, second_digit
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    
+exit: 
+    mov eax, 1
+    int 0x80
