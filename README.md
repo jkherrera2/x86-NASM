@@ -1,2 +1,2 @@
 # x86-NASM
-My Solution codes in Netwide Assembler (NASM) Programming. I used Jdoodle Online Assembler (NASM) as compilers.
+These are my solution codes in Netwide Assembler (NASM) Programming. I used Jdoodle Online Assembler (NASM) as compilers. These codes implements basic operations, arrays, and loops in NASM programming.
